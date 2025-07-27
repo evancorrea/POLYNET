@@ -55,6 +55,19 @@ python -m src.train
 ```
 This will train the model, print training/validation metrics, and save the trained model to `models/POLYNET.pt`.
 
+## Hyperparameter Search
+The training script (`src/train.py`) includes functionality for random hyperparameter search. By default, it runs multiple experiments with randomly selected values for batch size, learning rate, and number of epochs. For each experiment, the script trains and evaluates the model, and records the results.
+
+- **Configuration:**
+  - The hyperparameter ranges are defined in the `hyper_params` dictionary in `src/train.py`.
+  - You can modify the values for `batch_size`, `lr`, and `epochs` to explore different settings.
+- **Execution:**
+  - When you run the training script, it will perform 10 experiments (by default), each with a different random combination of hyperparameters.
+  - You can change the number of experiments by modifying the loop in the main block.
+- **Results:**
+  - After all experiments, the results (including hyperparameters, training/validation losses, and test metrics) are saved to `models/model_outputs.csv`.
+  - Each row in the CSV corresponds to one experiment, with columns for each hyperparameter and metric.
+
 ## Evaluation
 After training, the script will automatically evaluate the model on the test set and print AUROC and AUPRC metrics.
 
