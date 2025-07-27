@@ -44,11 +44,9 @@ POLYNET/
 
 ## Data Preparation
 1. Place your raw FASTA files (e.g., `pos_201_hg19.fa`, `neg_201_hg19.fa`) in `src/data/`.
-2. Run the data splitting script to generate train/val/test sets:
-   ```bash
-   python scripts/split_data.py
-   ```
-   This will create processed FASTA files in `src/data/processed/`.
+   - Note: These files were generated using PolyADB 3.0 and are sets of positive and negative examples for training. They are included as part of the repo for reproducibility purposes. 
+
+2. Processed files in train/test/val splits are located in src/data/processed. 
 
 ## Training
 Run the training script from the project root using the Python module flag:
@@ -67,5 +65,4 @@ After training, the script will automatically evaluate the model on the test set
 ## Requirements
 See `requirements.txt` for a full list of dependencies.
 
-## License
-[Add your license here]
+
