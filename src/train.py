@@ -84,25 +84,18 @@ def train_and_evaluate(
 
     print("Evaluating on test set...")
     test_auc, test_auprc, _ = evaluate(model, test_loader, device)
-    model_outputs.append({
-        "test_auc": test_auc,
-        "test_auprc": test_auprc,
-        "train_losses": train_losses,
-        "val_losses": val_losses,
-        "val_auc": val_auc,
-    })
-    print(f"Test set - AUROC: {test_auc:.4f}, AUPRC: {test_auprc:.4f}")
     print("Saving trained model to models/POLYNET.pt...")
     torch.save(model.state_dict(), "models/POLYNET.pt")
     print("Model saved.")
+    return test_auc, test_auprc, train_losses, val_losses, val_auc
 
-hyper_params = {
-        "batch_size": [64,128]
-        "lr": [1e-3, 1e-4, 1e-2]
+hyper_param_space = {
+        "batch_size": [64,128],
+        "lr": [1e-3, 1e-4, 1e-2],
         "epochs": [6,8,10]
     }
 def random_hyper_params():
-    return {param: random.choice(values) for param, values in hyper_params.items()}
+    return {param: random.choice(values) for param, values in hyper_param_space.items()}
 if __name__ == "__main__":
     print("Starting POLYNET training script...")
     train_files = ["src/data/processed/pos_201_train.fa", "src/data/processed/neg_201_train.fa"]
@@ -112,8 +105,17 @@ if __name__ == "__main__":
     for i in range(10):
         print(f"Running experiment {i+1}...")
         hyper_params = random_hyper_params()
-        train_and_evaluate(train_files, val_files, test_files,hyper_params["batch_size"],hyper_params["lr"],hyper_params["epochs"])
-        result = {'hyper_params': hyper_params, 'test_auc': test_auc, 'test_auprc': test_auprc, 'train_losses': train_losses, 'val_losses': val_losses, 'val_auc': val_auc}
+        test_auc, test_auprc, train_losses, val_losses, val_auc = train_and_evaluate(
+            train_files, val_files, test_files, hyper_params["batch_size"], hyper_params["lr"], hyper_params["epochs"]
+        )
+        result = {
+            'hyper_params': hyper_params,
+            'test_auc': test_auc,
+            'test_auprc': test_auprc,
+            'train_losses': train_losses,
+            'val_losses': val_losses,
+            'val_auc': val_auc
+        }
         model_outputs.append(result)
     df = pd.DataFrame(model_outputs)
     df.to_csv('models/model_outputs.csv', index=False)
