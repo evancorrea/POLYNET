@@ -5,7 +5,8 @@ from sklearn.metrics import roc_auc_score, average_precision_score
 from src.data.Pas_Dataset import PasDataset
 from src.models.POLYNET import POLYNET
 import matplotlib.pyplot as plt
-
+import random
+import pandas as pd
 
 def evaluate(model, loader, device):
     print("Evaluating model...")
@@ -26,7 +27,7 @@ def evaluate(model, loader, device):
 
 def train_and_evaluate(
     train_files, val_files, test_files,
-    batch_size=64, lr=1e-3, epochs=10
+    batch_size, lr, epochs
 ):
     print("Loading data and preparing datasets...")
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -83,15 +84,46 @@ def train_and_evaluate(
 
     print("Evaluating on test set...")
     test_auc, test_auprc, _ = evaluate(model, test_loader, device)
+    model_outputs.append({
+        "test_auc": test_auc,
+        "test_auprc": test_auprc,
+        "train_losses": train_losses,
+        "val_losses": val_losses,
+        "val_auc": val_auc,
+    })
     print(f"Test set - AUROC: {test_auc:.4f}, AUPRC: {test_auprc:.4f}")
     print("Saving trained model to models/POLYNET.pt...")
     torch.save(model.state_dict(), "models/POLYNET.pt")
     print("Model saved.")
 
-
+hyper_params = {
+        "batch_size": [64,128]
+        "lr": [1e-3, 1e-4, 1e-2]
+        "epochs": [6,8,10]
+    }
+def random_hyper_params():
+    return {param: random.choice(values) for param, values in hyper_params.items()}
 if __name__ == "__main__":
     print("Starting POLYNET training script...")
     train_files = ["src/data/processed/pos_201_train.fa", "src/data/processed/neg_201_train.fa"]
     val_files   = ["src/data/processed/pos_201_val.fa",   "src/data/processed/neg_201_val.fa"]
     test_files  = ["src/data/processed/pos_201_test.fa",  "src/data/processed/neg_201_test.fa"]
-    train_and_evaluate(train_files, val_files, test_files)
+    model_outputs = []
+    for i in range(10):
+        print(f"Running experiment {i+1}...")
+        hyper_params = random_hyper_params()
+        train_and_evaluate(train_files, val_files, test_files,hyper_params["batch_size"],hyper_params["lr"],hyper_params["epochs"])
+        result = {'hyper_params': hyper_params, 'test_auc': test_auc, 'test_auprc': test_auprc, 'train_losses': train_losses, 'val_losses': val_losses, 'val_auc': val_auc}
+        model_outputs.append(result)
+    df = pd.DataFrame(model_outputs)
+    df.to_csv('models/model_outputs.csv', index=False)
+    print("Model outputs saved to models/model_outputs.csv")
+    
+        
+
+
+
+
+
+
+
